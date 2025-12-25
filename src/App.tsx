@@ -9,7 +9,6 @@ function App() {
   const [activeNotes, setActiveNotes] = useState<Set<string>>(new Set());
   const [activeFrequencies, setActiveFrequencies] = useState<number[]>([]);
   const [isStarted, setIsStarted] = useState(false);
-  const [vizMode, setVizMode] = useState<'static' | 'live'>('static');
 
   const handleStart = async () => {
     await resumeContext();
@@ -60,24 +59,9 @@ function App() {
         </button>
       ) : (
         <main className="main">
-          <div className="viz-controls">
-            <button
-              className={`viz-toggle ${vizMode === 'static' ? 'active' : ''}`}
-              onClick={() => setVizMode('static')}
-            >
-              Static
-            </button>
-            <button
-              className={`viz-toggle ${vizMode === 'live' ? 'active' : ''}`}
-              onClick={() => setVizMode('live')}
-            >
-              Live
-            </button>
-          </div>
           <WaveformVisualizer
             frequencies={activeFrequencies}
             getAnalyser={getAnalyser}
-            mode={vizMode}
           />
           <Keyboard
             onNoteStart={handleNoteStart}

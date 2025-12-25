@@ -1,15 +1,16 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
+import { Module } from './Module';
 import './WaveformVisualizer.css';
 
 interface WaveformVisualizerProps {
   frequencies: number[];
   getAnalyser: () => AnalyserNode | null;
-  mode: 'static' | 'live';
 }
 
-export function WaveformVisualizer({ frequencies, getAnalyser, mode }: WaveformVisualizerProps) {
+export function WaveformVisualizer({ frequencies, getAnalyser }: WaveformVisualizerProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationIdRef = useRef<number | null>(null);
+  const [mode, setMode] = useState<'static' | 'live'>('static');
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -51,7 +52,7 @@ export function WaveformVisualizer({ frequencies, getAnalyser, mode }: WaveformV
 
     const drawStatic = (width: number, height: number) => {
       if (frequencies.length > 0) {
-        const duration = 0.015; // 15ms fixed window
+        const duration = 0.015;
         const sampleRate = 44100;
         const samplesToShow = Math.floor(duration * sampleRate);
 
@@ -165,9 +166,24 @@ export function WaveformVisualizer({ frequencies, getAnalyser, mode }: WaveformV
   }, [frequencies, getAnalyser, mode]);
 
   return (
-    <div className="visualizer-container">
-      <canvas ref={canvasRef} className="waveform-canvas" />
-      <div className="visualizer-label">{mode === 'static' ? 'Static' : 'Live'} Waveform</div>
-    </div>
+    <Module title="Waveform">
+      <div className="visualizer-controls">
+        <button
+          className={mode === 'static' ? 'active' : ''}
+          onClick={() => setMode('static')}
+        >
+          Static
+        </button>
+        <button
+          className={mode === 'live' ? 'active' : ''}
+          onClick={() => setMode('live')}
+        >
+          Live
+        </button>
+      </div>
+      <div className="visualizer-container">
+        <canvas ref={canvasRef} className="waveform-canvas" />
+      </div>
+    </Module>
   );
 }
