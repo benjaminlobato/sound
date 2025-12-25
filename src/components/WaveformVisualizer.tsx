@@ -2,15 +2,16 @@ import { useRef, useEffect } from 'react';
 import './WaveformVisualizer.css';
 
 interface WaveformVisualizerProps {
+  frequencies: number[];
   getAnalyser: () => AnalyserNode | null;
+  mode: 'static' | 'live';
 }
 
-export function WaveformVisualizer({ getAnalyser }: WaveformVisualizerProps) {
+export function WaveformVisualizer({ frequencies, getAnalyser, mode }: WaveformVisualizerProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationIdRef = useRef<number | null>(null);
 
   useEffect(() => {
-    // Guard against SSR
     if (typeof window === 'undefined') return;
 
     const canvas = canvasRef.current;
@@ -19,7 +20,6 @@ export function WaveformVisualizer({ getAnalyser }: WaveformVisualizerProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set canvas size with device pixel ratio for crisp rendering
     const resizeCanvas = () => {
       const rect = canvas.getBoundingClientRect();
       const dpr = window.devicePixelRatio || 1;
@@ -31,28 +31,15 @@ export function WaveformVisualizer({ getAnalyser }: WaveformVisualizerProps) {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    // Animation loop
-    const draw = () => {
-      const analyser = getAnalyser();
-      const rect = canvas.getBoundingClientRect();
-      const width = rect.width;
-      const height = rect.height;
-
-      // Clear canvas with dark background
-      ctx.fillStyle = '#0f0f1a';
-      ctx.fillRect(0, 0, width, height);
-
-      // Draw grid lines
+    const drawGrid = (width: number, height: number) => {
       ctx.strokeStyle = '#1a1a2e';
       ctx.lineWidth = 1;
 
-      // Horizontal center line
       ctx.beginPath();
       ctx.moveTo(0, height / 2);
       ctx.lineTo(width, height / 2);
       ctx.stroke();
 
-      // Vertical grid lines
       for (let i = 0; i < 10; i++) {
         const x = (width / 10) * i;
         ctx.beginPath();
@@ -60,13 +47,56 @@ export function WaveformVisualizer({ getAnalyser }: WaveformVisualizerProps) {
         ctx.lineTo(x, height);
         ctx.stroke();
       }
+    };
+
+    const drawStatic = (width: number, height: number) => {
+      if (frequencies.length > 0) {
+        const duration = 0.015; // 15ms fixed window
+        const sampleRate = 44100;
+        const samplesToShow = Math.floor(duration * sampleRate);
+
+        ctx.beginPath();
+        ctx.strokeStyle = '#a855f7';
+        ctx.lineWidth = 2;
+        ctx.shadowColor = '#a855f7';
+        ctx.shadowBlur = 10;
+
+        const sliceWidth = width / samplesToShow;
+
+        for (let i = 0; i < samplesToShow; i++) {
+          const t = i / sampleRate;
+
+          let value = 0;
+          for (const freq of frequencies) {
+            value += Math.sin(2 * Math.PI * freq * t);
+          }
+          value /= frequencies.length;
+
+          const y = height / 2 - value * height * 0.35;
+          const x = i * sliceWidth;
+
+          if (i === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+        }
+
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      } else {
+        drawFlatLine(width, height);
+      }
+    };
+
+    const drawLive = (width: number, height: number) => {
+      const analyser = getAnalyser();
 
       if (analyser) {
         const bufferLength = analyser.frequencyBinCount;
         const dataArray = new Uint8Array(bufferLength);
         analyser.getByteTimeDomainData(dataArray);
 
-        // Draw waveform
         ctx.beginPath();
         ctx.strokeStyle = '#a855f7';
         ctx.lineWidth = 2;
@@ -92,13 +122,33 @@ export function WaveformVisualizer({ getAnalyser }: WaveformVisualizerProps) {
         ctx.stroke();
         ctx.shadowBlur = 0;
       } else {
-        // Draw flat line when no analyser
-        ctx.beginPath();
-        ctx.strokeStyle = '#4a4a5a';
-        ctx.lineWidth = 2;
-        ctx.moveTo(0, height / 2);
-        ctx.lineTo(width, height / 2);
-        ctx.stroke();
+        drawFlatLine(width, height);
+      }
+    };
+
+    const drawFlatLine = (width: number, height: number) => {
+      ctx.beginPath();
+      ctx.strokeStyle = '#4a4a5a';
+      ctx.lineWidth = 2;
+      ctx.moveTo(0, height / 2);
+      ctx.lineTo(width, height / 2);
+      ctx.stroke();
+    };
+
+    const draw = () => {
+      const rect = canvas.getBoundingClientRect();
+      const width = rect.width;
+      const height = rect.height;
+
+      ctx.fillStyle = '#0f0f1a';
+      ctx.fillRect(0, 0, width, height);
+
+      drawGrid(width, height);
+
+      if (mode === 'static') {
+        drawStatic(width, height);
+      } else {
+        drawLive(width, height);
       }
 
       animationIdRef.current = requestAnimationFrame(draw);
@@ -112,12 +162,12 @@ export function WaveformVisualizer({ getAnalyser }: WaveformVisualizerProps) {
         cancelAnimationFrame(animationIdRef.current);
       }
     };
-  }, [getAnalyser]);
+  }, [frequencies, getAnalyser, mode]);
 
   return (
     <div className="visualizer-container">
       <canvas ref={canvasRef} className="waveform-canvas" />
-      <div className="visualizer-label">Waveform</div>
+      <div className="visualizer-label">{mode === 'static' ? 'Static' : 'Live'} Waveform</div>
     </div>
   );
 }

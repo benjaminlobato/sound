@@ -53,6 +53,35 @@
   align-items: center;
 }
 
+.viz-controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.viz-toggle {
+  padding: 8px 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  background: #1a1a2e;
+  color: #888;
+  border: 1px solid #2a2a3e;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.viz-toggle:hover {
+  background: #252538;
+  color: #aaa;
+}
+
+.viz-toggle.active {
+  background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
+  color: white;
+  border-color: transparent;
+}
+
 .instructions {
   margin-top: 30px;
   text-align: center;

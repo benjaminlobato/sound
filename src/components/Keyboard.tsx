@@ -20,7 +20,7 @@ const NOTES = [
 
 interface KeyboardProps {
   onNoteStart: (noteId: string, frequency: number) => void;
-  onNoteStop: (noteId: string) => void;
+  onNoteStop: (noteId: string, frequency: number) => void;
   activeNotes: Set<string>;
 }
 
@@ -41,7 +41,7 @@ export function Keyboard({ onNoteStart, onNoteStop, activeNotes }: KeyboardProps
     (e: KeyboardEvent) => {
       const note = NOTES.find((n) => n.key === e.key.toLowerCase());
       if (note) {
-        onNoteStop(note.note);
+        onNoteStop(note.note, note.frequency);
       }
     },
     [onNoteStop]
@@ -81,13 +81,13 @@ export function Keyboard({ onNoteStart, onNoteStop, activeNotes }: KeyboardProps
             key={note.note}
             className={`key white-key ${activeNotes.has(note.note) ? 'active' : ''}`}
             onMouseDown={() => onNoteStart(note.note, note.frequency)}
-            onMouseUp={() => onNoteStop(note.note)}
-            onMouseLeave={() => onNoteStop(note.note)}
+            onMouseUp={() => onNoteStop(note.note, note.frequency)}
+            onMouseLeave={() => onNoteStop(note.note, note.frequency)}
             onTouchStart={(e) => {
               e.preventDefault();
               onNoteStart(note.note, note.frequency);
             }}
-            onTouchEnd={() => onNoteStop(note.note)}
+            onTouchEnd={() => onNoteStop(note.note, note.frequency)}
           >
             <span className="key-label">{note.note}</span>
             <span className="key-hint">{note.key.toUpperCase()}</span>
@@ -102,13 +102,13 @@ export function Keyboard({ onNoteStart, onNoteStop, activeNotes }: KeyboardProps
               left: `calc(${getBlackKeyPosition(note.note)} * (100% / 8) + (100% / 8) - 20px)`,
             }}
             onMouseDown={() => onNoteStart(note.note, note.frequency)}
-            onMouseUp={() => onNoteStop(note.note)}
-            onMouseLeave={() => onNoteStop(note.note)}
+            onMouseUp={() => onNoteStop(note.note, note.frequency)}
+            onMouseLeave={() => onNoteStop(note.note, note.frequency)}
             onTouchStart={(e) => {
               e.preventDefault();
               onNoteStart(note.note, note.frequency);
             }}
-            onTouchEnd={() => onNoteStop(note.note)}
+            onTouchEnd={() => onNoteStop(note.note, note.frequency)}
           >
             <span className="key-hint">{note.key.toUpperCase()}</span>
           </button>
