@@ -1,11 +1,27 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useAudioEngine } from './hooks/useAudioEngine';
 import { Keyboard } from './components/Keyboard';
 import { WaveformVisualizer } from './components/WaveformVisualizer';
+import { ADSRControls, type ADSRValues } from './components/ADSRControls';
 import './App.css';
 
+const DEFAULT_ADSR: ADSRValues = {
+  attack: 0.02,
+  decay: 0.1,
+  sustain: 0.7,
+  release: 0.3,
+};
+
 function App() {
-  const { resumeContext, startNote, stopNote, getAnalyser } = useAudioEngine();
+  const [adsr, setAdsr] = useState<ADSRValues>(DEFAULT_ADSR);
+  const adsrRef = useRef<ADSRValues>(DEFAULT_ADSR);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    adsrRef.current = adsr;
+  }, [adsr]);
+
+  const { resumeContext, startNote, stopNote, getAnalyser } = useAudioEngine(adsrRef);
   const [activeNotes, setActiveNotes] = useState<Set<string>>(new Set());
   const [activeFrequencies, setActiveFrequencies] = useState<number[]>([]);
 
@@ -51,6 +67,7 @@ function App() {
           frequencies={activeFrequencies}
           getAnalyser={getAnalyser}
         />
+        <ADSRControls values={adsr} onChange={setAdsr} />
         <Keyboard
           onNoteStart={handleNoteStart}
           onNoteStop={handleNoteStop}
