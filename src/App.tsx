@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useAudioEngine } from './hooks/useAudioEngine';
 import { Keyboard } from './components/Keyboard';
 import { WaveformVisualizer } from './components/WaveformVisualizer';
+import { PondVisualizer } from './components/PondVisualizer';
 import { ADSRControls, type ADSRValues } from './components/ADSRControls';
 import './App.css';
 
@@ -67,6 +68,7 @@ function App() {
           frequencies={activeFrequencies}
           getAnalyser={getAnalyser}
         />
+        <PondVisualizer frequencies={activeFrequencies} />
         <ADSRControls values={adsr} onChange={setAdsr} />
         <Keyboard
           onNoteStart={handleNoteStart}

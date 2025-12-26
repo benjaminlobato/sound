@@ -1,0 +1,41 @@
+.pond-controls {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.pond-controls button {
+  padding: 6px 16px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: #252538;
+  color: #888;
+  border: 1px solid #2a2a3e;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pond-controls button:hover {
+  background: #2a2a40;
+  color: #aaa;
+}
+
+.pond-controls button.active {
+  background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.pond-container {
+  width: 100%;
+}
+
+.pond-canvas {
+  display: block;
+  width: 100%;
+  border-radius: 8px;
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.3),
+    inset 0 0 60px rgba(100, 150, 255, 0.1);
+}
